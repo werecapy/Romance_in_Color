@@ -53,7 +53,7 @@ def append_to_google_sheet(sheet_id, book_links):
         # Define the scope and authenticate
         SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
         credentials = Credentials.from_service_account_file(
-            "/Volumes/Extreme/Romance_in_Color/Credentials/subgenreincolor-a63fea84adab.json", scopes=SCOPES)
+            "/Volumes/Extreme/Romance_in_Color/URLget/subgenreincolor-5b4254bdad95.json", scopes=SCOPES)
         client = gspread.authorize(credentials)
 
         # Access the spreadsheet
