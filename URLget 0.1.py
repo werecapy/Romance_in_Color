@@ -121,7 +121,7 @@ def automate_weekly_scrape(start_date, base_url, sheet_id):
 
 # Set up the script parameters
 if __name__ == "__main__":
-    start_date = "2022-11-20"  # Start scraping from this date
+    start_date = "2022-05-29"  # Start scraping from this date
     base_url = "https://www.romance.io/new/weekly/2024-11-10?showall=true#showall"  # Base URL template
     sheet_id = "1rUaqs21KDwiYbG-6wISvdjFmpmt9Lzu7DuntQ8ZMe-E"  # Your Google Sheet ID
 

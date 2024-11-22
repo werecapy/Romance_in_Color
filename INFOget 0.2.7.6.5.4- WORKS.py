@@ -6,6 +6,7 @@ import re
 import json
 import time
 
+missed = 0
 # Function to clean up extracted lists (removes unwanted characters and extra spaces)
 def clean_list(lst):
     return [item.strip().replace('\n', '').replace('  ', ' ') for item in lst if item.strip()]
@@ -110,7 +111,20 @@ def scrape_book_data(url):
     author_name = author_tag.find('a').text.strip() if author_tag else 'Author not found'
 
     # Extract the meta description content
-    meta_description = soup.find('meta', {'name': 'description'}).get('content', '')
+    try:
+        meta_description = soup.find('meta', {'name': 'description'}).get('content', '')
+    except AttributeError:
+        missed_def()
+        return {
+            'title': None,
+            'author': None,  # Use the author extracted from JSON-LD
+            'rating': None,
+            'spice_level': None,
+            'date_published': None,
+            'cover_image_url': None,
+            'tags': None,  # Tags extracted from the <li> elements
+            'content_warnings': None  # Content warnings extracted
+        }
 
     # Use regex to extract the rating
     rating_match = re.search(r"Rated (\d+\.\d)/5 stars", meta_description)
@@ -145,6 +159,7 @@ def scrape_book_data(url):
     except json.JSONDecodeError:
         print("Error decoding JSON data.")
         cover_image_url = None
+        missed_def()
         date_published = 'Date not found'
 
 
@@ -185,18 +200,32 @@ def write_to_google_sheets(book_info, spreadsheet_name, worksheet_name):
     except Exception as e:
         print(f"An error occurred: {e}")
 
+def missed_def():
+    global missed
+    missed += 1
+    print ("Missed Data. Total: " + str(missed))
 
 
 # Loop through each URL and scrape the data with a cooldown of 8 seconds
-for url in urls:
-    if is_duplicate(url):
-        print(f"Skipping duplicate URL: {url}")
-        continue  # Skip to the next URL if it's a duplicate
+skip = 13 #this is the number to change skips
+skip_count = 0
+cooldown = 2
+try:
+    for url in urls:
+        if skip_count < skip:
+            skip_count += 1
+            continue
+        if is_duplicate(url):
+            print(f"Skipping duplicate URL: {url}")
+            continue  # Skip to the next URL if it's a duplicate
 
-    print(f"Scraping data from URL: {url}")
-    book_info = scrape_book_data(url)
-    write_to_google_sheets(book_info, "Romance Books", "Book Details")
+        print(f"Scraping data from URL: {url}")
+        book_info = scrape_book_data(url)
+        write_to_google_sheets(book_info, "Romance Books", "Book Details")
 
-    # Add a cooldown of 8 seconds between requests
-    print("Cooldown... waiting for 8 seconds.")
-    time.sleep(8)  # Pause the script for 8 seconds
+        # Add a cooldown of 8 seconds between requests
+        print(f"Cooldown... waiting for {cooldown} seconds.")
+        time.sleep(cooldown)  # Pause the script for 8 seconds
+except KeyboardInterrupt:
+
+    print('Missed ' + missed + ' items.')
